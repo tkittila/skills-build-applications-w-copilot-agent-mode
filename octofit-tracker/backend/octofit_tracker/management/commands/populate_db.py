@@ -1,37 +1,11 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from djongo import models
-
-class Team(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    class Meta:
-        app_label = 'octofit_tracker'
-
-class Activity(models.Model):
-    name = models.CharField(max_length=100)
-    user = models.CharField(max_length=100)
-    team = models.CharField(max_length=100)
-    class Meta:
-        app_label = 'octofit_tracker'
-
-class Leaderboard(models.Model):
-    team = models.CharField(max_length=100)
-    points = models.IntegerField()
-    class Meta:
-        app_label = 'octofit_tracker'
-
-class Workout(models.Model):
-    name = models.CharField(max_length=100)
-    difficulty = models.CharField(max_length=50)
-    class Meta:
-        app_label = 'octofit_tracker'
+from octofit_tracker.models import User, Team, Activity, Leaderboard, Workout
 
 class Command(BaseCommand):
     help = 'Populate the octofit_db database with test data'
 
     def handle(self, *args, **kwargs):
-        User = get_user_model()
-        # Delete all data
+        # Delete existing data
         User.objects.all().delete()
         Team.objects.all().delete()
         Activity.objects.all().delete()
@@ -39,30 +13,31 @@ class Command(BaseCommand):
         Workout.objects.all().delete()
 
         # Create teams
-        marvel = Team.objects.create(name='Marvel')
-        dc = Team.objects.create(name='DC')
+        marvel = Team.objects.create(name='Marvel', description='Marvel Superheroes')
+        dc = Team.objects.create(name='DC', description='DC Superheroes')
 
-        # Create users (super heroes)
+        # Create users
         users = [
-            User.objects.create_user(username='spiderman', email='spiderman@marvel.com', password='pass', first_name='Peter', last_name='Parker'),
-            User.objects.create_user(username='ironman', email='ironman@marvel.com', password='pass', first_name='Tony', last_name='Stark'),
-            User.objects.create_user(username='batman', email='batman@dc.com', password='pass', first_name='Bruce', last_name='Wayne'),
-            User.objects.create_user(username='wonderwoman', email='wonderwoman@dc.com', password='pass', first_name='Diana', last_name='Prince'),
+            User.objects.create(name='Spider-Man', email='spiderman@marvel.com', team=marvel.name),
+            User.objects.create(name='Iron Man', email='ironman@marvel.com', team=marvel.name),
+            User.objects.create(name='Batman', email='batman@dc.com', team=dc.name),
+            User.objects.create(name='Wonder Woman', email='wonderwoman@dc.com', team=dc.name),
         ]
 
         # Create activities
-        Activity.objects.create(name='Run', user='spiderman', team='Marvel')
-        Activity.objects.create(name='Swim', user='ironman', team='Marvel')
-        Activity.objects.create(name='Fly', user='wonderwoman', team='DC')
-        Activity.objects.create(name='Drive', user='batman', team='DC')
+        Activity.objects.create(user=users[0], type='Running', duration=30, date='2025-08-20')
+        Activity.objects.create(user=users[1], type='Cycling', duration=45, date='2025-08-19')
+        Activity.objects.create(user=users[2], type='Swimming', duration=60, date='2025-08-18')
+        Activity.objects.create(user=users[3], type='Yoga', duration=50, date='2025-08-17')
 
         # Create leaderboard
-        Leaderboard.objects.create(team='Marvel', points=200)
-        Leaderboard.objects.create(team='DC', points=180)
+        Leaderboard.objects.create(team=marvel, points=150)
+        Leaderboard.objects.create(team=dc, points=120)
 
         # Create workouts
-        Workout.objects.create(name='Pushups', difficulty='Easy')
-        Workout.objects.create(name='Squats', difficulty='Medium')
-        Workout.objects.create(name='Deadlift', difficulty='Hard')
+        Workout.objects.create(name='Pushups', description='Do 20 pushups', difficulty='Easy')
+        Workout.objects.create(name='Squats', description='Do 30 squats', difficulty='Medium')
+        Workout.objects.create(name='Plank', description='Hold plank for 1 min', difficulty='Hard')
 
-        self.stdout.write(self.style.SUCCESS('octofit_db database populated with test data'))
+
+

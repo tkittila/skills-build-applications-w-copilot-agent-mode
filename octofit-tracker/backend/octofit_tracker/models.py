@@ -9,14 +9,16 @@ class Team(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
 
+
 class Activity(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.CharField(max_length=100)  # Store user name or email
     type = models.CharField(max_length=50)
     duration = models.IntegerField()
     date = models.DateField()
 
+
 class Leaderboard(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team = models.CharField(max_length=50)  # Store team name
     points = models.IntegerField()
 
 class Workout(models.Model):
